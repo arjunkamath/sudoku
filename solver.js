@@ -1,9 +1,5 @@
-//let puzzleArray = [9][9];
 
-//const zeroToEight = [0,1,2,3,4,5,6,7,8];
-
-//test
-// hard
+// check for nonets
 let puzzleArray = 
             [[0,2,0,6,0,8,0,0,0],
              [5,8,0,0,0,9,7,0,0],
@@ -13,8 +9,23 @@ let puzzleArray =
              [0,0,8,0,0,0,0,1,3],
              [0,0,0,0,2,0,0,0,0],
              [0,0,9,8,0,0,0,3,6],
-             [0,0,0,3,0,6,0,9,0]]
+             [0,0,0,3,0,6,0,9,0]];
+
+
+
 /*
+let puzzleArray = 
+            [[0,2,0,6,0,8,0,0,0],
+             [5,8,0,0,0,9,7,0,0],
+             [0,0,0,0,4,0,0,0,0],
+             [3,7,0,0,0,0,5,0,0],
+             [6,0,0,0,0,0,0,0,4],
+             [0,0,8,0,0,0,0,1,3],
+             [0,0,0,0,2,0,0,0,0],
+             [0,0,9,8,0,0,0,3,6],
+             [0,0,0,3,0,6,0,9,0]];
+
+// check for nonets
 let puzzleArray = 
             [[0,0,4,0,0,0,0,0,0],
              [0,0,0,0,0,0,0,0,0],
@@ -77,11 +88,12 @@ let puzzleArray = [[0,2,5,0,4,1,0,0,3],
              [5,9,0,4,0,0,8,0,6],
              [0,0,0,0,0,0,0,5,1],
              [7,0,0,2,1,0,9,3,0]]
-*/
 
-let possibilitiesSetObj = {};
+
+
 
 function printMain(mainArray){
+  console.log();
   mainArray.forEach(innerArray => {
     process.stdout.write("|  ");
     innerArray.forEach(elem => {
@@ -91,6 +103,11 @@ function printMain(mainArray){
   });
   process.stdout.write("\n");
 }
+
+*/
+
+let possibilitiesSetObj = {};
+let nonetsObj = {};
 
 function fillpossibilitiesSetObj(puzzle){
   puzzle.forEach((innerArray, i) => {
@@ -103,13 +120,10 @@ function fillpossibilitiesSetObj(puzzle){
   });
 }
 
-function printPossibilities(){
-  console.log(possibilitiesSetObj);
-}
+//console.log(puzzleArray);
 
-printMain(puzzleArray);
-fillpossibilitiesSetObj(puzzleArray)
-printPossibilities();
+fillpossibilitiesSetObj(puzzleArray);
+//console.log(possibilitiesSetObj);
 
 //Given i,j index of empty spot in the puzzle area, return the indices where to look
 function shouldBeUniqueIn(i,j){
@@ -156,7 +170,7 @@ function shouldBeUniqueIn(i,j){
 //Testing of shouldBeUniqueIn
 //console.log(shouldBeUniqueIn(4,4));
 
-function solvePuzzle(puzzleArray){
+function solveByElimination(){
   puzzleArray.forEach((innerArray, i) => {
     innerArray.forEach((elem, j) => {
       // if a box is empty, check the possibilitiesSet and eliminate options
@@ -179,47 +193,123 @@ function solvePuzzle(puzzleArray){
 
         // If set of possibilities has just one element, we have our winner!
         if(setToCheck.size == 1){
+          console.log([...setToCheck][0] + " goes to " + i + "" + j);
+          
           puzzleArray[i][j] = [...setToCheck][0];
 
-          // If one the first try, there was never a deletion, no need to do this
-          // elimination program again
-          
+          // If there was a deletion, re-run elimination program again
           delete possibilitiesSetObj[i + "" + j];
+          solveByElimination(puzzleArray)
         }
-      } else {
-        let boxesToCheck = shouldBeUniqueIn(i,j);
-        
-        //console.log(elem + " should be unique in ");
-        //console.log(boxesToCheck);
-
-        //This part below does exactly the same thing :(
-        /*
-          boxesToCheck.forEach(boxIndex => {
-            
-            if(possibilitiesSetObj[boxIndex[0] + "" + boxIndex[1]]){
-              //console.log("remove " + elem + " from set: " + boxIndex[0] + "" + boxIndex[1]);
-              //console.log("Before removing");
-              //console.log(possibilitiesSetObj[boxIndex[0] + "" + boxIndex[1]]);
-
-              if(puzzleArray[boxIndex[0]][boxIndex[1]] == 0){
-                possibilitiesSetObj[boxIndex[0] + "" + boxIndex[1]].delete(elem)
-              }
-
-              //console.log("After removing");
-              //console.log(possibilitiesSetObj[boxIndex[0] + "" + boxIndex[1]]);
-              //console.log();
-            }
-          })
-        */
-
-        //setToCheck.forEach
       }
     })
   });
 }
 
+function fillnonetsObj(){
+  // {'x0' = {[00,01,02,03....]},
+  //  'x1' = {[10,11,12,13....]} ...,
+  //  'y0' = {[00,11,12,13....]} ...,
+  //  'b0' = {[00,01,02,10,11,12,20,21,22]} ...,}
 
-solvePuzzle(puzzleArray);
-//printMain(puzzleArray);
+  [0,1,2,3,4,5,6,7,8].forEach(xIndex => {
+    nonetsObj["x" + xIndex] = new Set();
+    [0,1,2,3,4,5,6,7,8].forEach(yIndex => {
+      nonetsObj["x" + xIndex].add(xIndex + "" + yIndex)
+    })
+  });
 
-printPossibilities();
+  
+  [0,1,2,3,4,5,6,7,8].forEach(yIndex => {
+    nonetsObj["y" + yIndex] = new Set();
+    [0,1,2,3,4,5,6,7,8].forEach(xIndex => {
+      nonetsObj["y" + yIndex].add(xIndex + "" + yIndex)
+    })
+  });
+
+  
+  [0,1,2].forEach(bXIndex => {
+    [0,1,2].forEach(bYIndex => {
+      nonetsObj["b" + bXIndex + "" + bYIndex] = new Set();
+    })
+  });
+
+  [0,1,2,3,4,5,6,7,8].forEach(xIndex => {
+    [0,1,2,3,4,5,6,7,8].forEach(yIndex => {
+      nonetsObj["b" + Math.floor(xIndex/3) + "" + Math.floor(yIndex/3)].add(xIndex + "" + yIndex)
+    })
+  });
+
+  //console.log(nonetsObj)
+}
+
+fillnonetsObj();
+
+// All 9 digits must exist in each nonet
+function solveByCheckingNonets(){
+  Object.keys(nonetsObj).forEach(function(nonetKey) {
+    //console.log(nonetKey);
+    [1,2,3,4,5,6,7,8,9].forEach(number => {
+      if(!numberExistsInNonet(puzzleArray, number, nonetKey)){
+        // assign a nonet for each number
+        let nonet = new Set(nonetsObj[nonetKey]);
+
+        // remove the boxIndex from this number's nonet, if the number cannot be 
+        // in the box eg, if it exists in same vertical line in different block 
+        nonet.forEach(boxIndex => {
+          if(numberCannotBeInBox(number, boxIndex)){
+            //console.log(number + " cannot be in " + boxIndex);
+            nonet.delete(boxIndex)
+          }
+        })
+
+        // if for this number's nonet, only one boxIndex remains
+        // the number goes to the boxIndex
+        if(nonet.size == 1){
+          let iIndex = [...nonet][0];
+          console.log(number + " goes to " + iIndex);
+          puzzleArray[iIndex[0]][iIndex[1]] = number;
+        }
+      }
+    })
+  });
+}
+
+function numberCannotBeInBox(number, boxIndex){
+  //console.log(boxIndex);
+  //console.log(possibilitiesSetObj[boxIndex]);
+
+  return (  (puzzleArray[boxIndex[0]][boxIndex[1]]!= 0) || !((possibilitiesSetObj[boxIndex]).has(number)) )
+
+  //return !((possibilitiesSetObj[boxIndex]).has(number));
+}
+
+//ForEach cannot break or return in the middle, this can be made more efficient but I'll leave this
+// like this for now
+function numberExistsInNonet(puzzleArray, number, nonetKey){
+  let exists = false;
+  nonetsObj[nonetKey].forEach(boxIndex => {
+    if(puzzleArray[boxIndex[0]][boxIndex[1]] === number){
+      exists = true;
+    }
+  })
+  return exists;
+};
+
+//console.log(numberExistsInNonet(puzzleArray, 2, 'x0'));
+//console.log(numberExistsInNonet(puzzleArray, 2, 'b00'));
+
+solveByElimination();
+console.log(possibilitiesSetObj);
+console.log();
+console.log(puzzleArray);
+
+
+
+
+solveByCheckingNonets();
+//console.log();
+console.log(puzzleArray);
+
+
+
