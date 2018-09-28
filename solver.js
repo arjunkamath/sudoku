@@ -1,15 +1,15 @@
 
 // check for nonets
 let puzzleArray = 
-            [[0,2,0,6,0,8,0,0,0],
-             [5,8,0,0,0,9,7,0,0],
-             [0,0,0,0,4,0,0,0,0],
-             [3,7,0,0,0,0,5,0,0],
-             [6,0,0,0,0,0,0,0,4],
-             [0,0,8,0,0,0,0,1,3],
-             [0,0,0,0,2,0,0,0,0],
-             [0,0,9,8,0,0,0,3,6],
-             [0,0,0,3,0,6,0,9,0]];
+            [[0,8,9,7,0,0,0,0,0],
+             [2,0,4,0,0,0,5,7,0],
+             [0,0,0,0,0,0,1,0,0],
+             [0,0,8,0,0,7,9,2,0],
+             [0,7,0,0,0,2,0,5,4],
+             [0,0,0,0,0,6,0,0,8],
+             [7,0,1,8,0,9,0,0,0],
+             [8,0,5,1,2,0,0,0,0],
+             [0,4,0,0,0,0,0,0,0]];
 
 
 
@@ -269,6 +269,7 @@ function solveByCheckingNonets(){
           let iIndex = [...nonet][0];
           console.log(number + " goes to " + iIndex);
           puzzleArray[iIndex[0]][iIndex[1]] = number;
+          delete possibilitiesSetObj[iIndex];
         }
       }
     })
@@ -300,16 +301,32 @@ function numberExistsInNonet(puzzleArray, number, nonetKey){
 //console.log(numberExistsInNonet(puzzleArray, 2, 'b00'));
 
 solveByElimination();
-console.log(possibilitiesSetObj);
+// console.log(possibilitiesSetObj);
 console.log();
 console.log(puzzleArray);
-
-
 
 
 solveByCheckingNonets();
 //console.log();
 console.log(puzzleArray);
+// console.log(possibilitiesSetObj);
 
+solveByElimination();
+console.log(possibilitiesSetObj);
+console.log();
+console.log(puzzleArray);
 
+function solveByPreemptiveSets(){
+  Object.keys(nonetsObj).forEach(function(nonetKey) {
+    let nonet = nonetsObj[nonetKey];
+    let setsToCheck = {}
+    nonet.forEach((boxIndex) => {
+      if(puzzleArray[boxIndex[0]][boxIndex[1]] == 0){
+        setsToCheck[boxIndex] = possibilitiesSetObj[boxIndex];
+      }
+    })
+    console.log(setsToCheck);
+  });
+}
 
+solveByPreemptiveSets();
