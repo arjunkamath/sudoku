@@ -325,8 +325,53 @@ function solveByPreemptiveSets(){
         setsToCheck[boxIndex] = possibilitiesSetObj[boxIndex];
       }
     })
+    
     console.log(setsToCheck);
+
+    let setOfArraysOfEqualSets = {};
+    //checkForPreemptiveEqualityInSets(null, setsToCheck, setOfArraysOfEqualSets);
+    console.log("setOfArraysOfEqualSets: ");
+    console.log(setOfArraysOfEqualSets);
   });
 }
 
-solveByPreemptiveSets();
+//solveByPreemptiveSets();
+
+function checkForPreemptiveEqualityInSets(mainSetBoxIndex, mainSet, RemainingSets, setOfArraysOfEqualSets){
+
+  console.log(mainSetBoxIndex);
+  console.log(RemainingSets);
+  
+  if(Object.keys(RemainingSets).length === 0){
+    console.log("Exiting");
+    
+    return -1;
+  }
+
+  Object.keys(RemainingSets).forEach(boxIndex => {
+    if(mainSetBoxIndex != null && areTwoSetsEqualAndHaveTwoPossibilities(mainSet, RemainingSets[boxIndex])){
+     console.log("Pushing: " + mainSetBoxIndex + " & " + boxIndex);
+     
+     setOfArraysOfEqualSets.push([mainSetBoxIndex, boxIndex]) 
+    }
+    let newSetsObj = Object.assign({}, RemainingSets);
+    //console.log(newSetsObj);
+    delete newSetsObj[boxIndex];
+    return checkForPreemptiveEqualityInSets(boxIndex, RemainingSets[boxIndex], newSetsObj, setOfArraysOfEqualSets);
+  })  
+}
+
+areTwoSetsEqualAndHaveTwoPossibilities = (a, b) => 
+{ 
+  console.log(a);
+  console.log(b);
+  return (a.size === 2 && a.size === b.size && [...a].every(value => b.has(value)) )
+
+};
+
+
+let setOfArraysOfEqualSets = [];
+let testObj = { '40': new Set([1, 3, 6, 9]),'42': new Set([3, 6]),'43': new Set([3, 9]),'46': new Set([3, 6])}
+checkForPreemptiveEqualityInSets(null, null, testObj, setOfArraysOfEqualSets);
+
+//console.log(areTwoSetsEqual(new Set([3, 6]), new Set([3, 9])));
