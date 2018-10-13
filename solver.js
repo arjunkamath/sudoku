@@ -277,12 +277,7 @@ function solveByCheckingNonets(){
 }
 
 function numberCannotBeInBox(number, boxIndex){
-  //console.log(boxIndex);
-  //console.log(possibilitiesSetObj[boxIndex]);
-
   return (  (puzzleArray[boxIndex[0]][boxIndex[1]]!= 0) || !((possibilitiesSetObj[boxIndex]).has(number)) )
-
-  //return !((possibilitiesSetObj[boxIndex]).has(number));
 }
 
 //ForEach cannot break or return in the middle, this can be made more efficient but I'll leave this
@@ -297,17 +292,13 @@ function numberExistsInNonet(puzzleArray, number, nonetKey){
   return exists;
 };
 
-//console.log(numberExistsInNonet(puzzleArray, 2, 'x0'));
-//console.log(numberExistsInNonet(puzzleArray, 2, 'b00'));
-
 solveByElimination();
-// console.log(possibilitiesSetObj);
 console.log();
 console.log(puzzleArray);
 
 
 solveByCheckingNonets();
-//console.log();
+console.log();
 console.log(puzzleArray);
 // console.log(possibilitiesSetObj);
 
@@ -319,23 +310,202 @@ console.log(puzzleArray);
 function solveByPreemptiveSets(){
   Object.keys(nonetsObj).forEach(function(nonetKey) {
     let nonet = nonetsObj[nonetKey];
-    let setsToCheck = {}
+    let setsToCheck = {};
+    let organizedSets = {};
     nonet.forEach((boxIndex) => {
       if(puzzleArray[boxIndex[0]][boxIndex[1]] == 0){
         setsToCheck[boxIndex] = possibilitiesSetObj[boxIndex];
       }
     })
     
-    console.log(setsToCheck);
-
-    let setOfArraysOfEqualSets = {};
-    //checkForPreemptiveEqualityInSets(null, setsToCheck, setOfArraysOfEqualSets);
-    console.log("setOfArraysOfEqualSets: ");
-    console.log(setOfArraysOfEqualSets);
+    //console.log("Nonet: " + nonetKey);
+    //console.log(setsToCheck);
+    console.log();
+    //console.log("ordered set: ");
+    organizedSets = organizeSetAsPerNumber(setsToCheck);
+   // console.log(organizedSets);
+    decideNumbersToEliminate(nonetKey, organizedSets);
+   // console.log("--------");
   });
 }
 
-//solveByPreemptiveSets();
+solveByPreemptiveSets();
+console.log(possibilitiesSetObj);
+
+solveByElimination();
+console.log();
+console.log(puzzleArray);
+console.log(possibilitiesSetObj);
+
+solveByCheckingNonets();
+console.log();
+console.log(puzzleArray);
+
+solveByElimination();
+console.log();
+console.log(puzzleArray);
+console.log(possibilitiesSetObj);
+
+
+solveByPreemptiveSets();
+console.log(possibilitiesSetObj);
+
+solveByCheckingNonets();
+console.log();
+console.log(puzzleArray);
+
+solveByElimination();
+console.log();
+console.log(puzzleArray);
+console.log(possibilitiesSetObj);
+
+function organizeSetAsPerNumber(setsObj){
+  let orderedSetsObj = {};
+  Object.keys(setsObj).forEach(key => {
+    [2,3,4,5].forEach(num => {
+      if(setsObj[key].size == num){
+        if(!orderedSetsObj[num]) { orderedSetsObj[num] = {} }
+        orderedSetsObj[num][key] = setsObj[key];
+      }
+    })
+  })
+  return orderedSetsObj;
+}
+
+function decideNumbersToEliminate(nonetKey, organizedSets){
+  Object.keys(organizedSets).forEach(numberofElementsInSet => {
+    if(Object.keys(organizedSets[numberofElementsInSet]).length == numberofElementsInSet){
+      //console.log("Easier to find " + numberofElementsInSet + " equal sets among");
+      //console.log(organizedSets[numberofElementsInSet]);
+      let array = [];
+      Object.keys(organizedSets[numberofElementsInSet]).forEach(key =>{
+        array.push(organizedSets[numberofElementsInSet][key])
+      })
+      if(areNSetsEqual(numberofElementsInSet, array)){
+        console.log("remove from " + nonetKey);
+        //console.log(organizedSets[numberofElementsInSet]);
+      };
+    } else if (Object.keys(organizedSets[numberofElementsInSet]).length > numberofElementsInSet){
+      //console.log("Difficult to find " + numberofElementsInSet + " equal sets among");
+     // console.log(organizedSets[numberofElementsInSet]);
+      let combs = getCombinations(Object.keys(organizedSets[numberofElementsInSet]), numberofElementsInSet);
+
+      combs.forEach(comb => {
+        let comparisonArray = [];
+        let boxesToLeaveOut = [];
+        comb.forEach(boxIndex => {
+          comparisonArray.push(possibilitiesSetObj[boxIndex])
+          boxesToLeaveOut.push(boxIndex)
+        })
+        //console.log(comparisonArray);
+        
+        if(areNSetsEqual(numberofElementsInSet, comparisonArray)){
+         // console.log("found equal");
+          //console.log(comparisonArray);
+
+         // console.log("can be eliminated from nonet: " + nonetKey);
+         // console.log("except: ");
+         // console.log(boxesToLeaveOut);
+
+          removePossibilitiesFrom(nonetKey, comparisonArray[0], boxesToLeaveOut);
+        }
+      })
+    }
+  })
+}
+
+function removePossibilitiesFrom(nonetKey, setOfNumbersToEliminate, boxesToLeaveOut){
+  nonetsObj[nonetKey].forEach(boxIndex => {
+    if(!boxesToLeaveOut.includes(boxIndex) && possibilitiesSetObj[boxIndex]!= null ){
+      console.log(boxIndex + "does not exist");
+      setOfNumbersToEliminate.forEach(possibilityToRemove => {
+        console.log("removing " + possibilityToRemove + " from");
+        console.log(possibilitiesSetObj[boxIndex]);
+        
+        
+        possibilitiesSetObj[boxIndex].delete(possibilityToRemove);
+      })
+    }
+  })
+}
+
+function getCombinations(arrayOfBoxes, noOfBoxesToCombine){
+  //console.log("arrayOfBoxes");
+  //console.log(noOfBoxesToCombine);
+  //console.log(arrayOfBoxes);
+  let combinations = [];
+
+  //console.log("combinations: ");
+  listCombinations(arrayOfBoxes, noOfBoxesToCombine, 0, [])
+  //console.log(combinations);
+
+  return combinations;
+
+  function listCombinations(array, count, pos, output){
+    if(output.length == count ){
+      //combs.push(output);
+  //    console.log(output);
+      combinations.push(output);
+    } 
+    for(let i = pos; i < (array.length ) ; i++){
+      let interim = output.slice(0);
+      
+      //console.log("pushing: " + array[i] + " into " + output);
+      interim.push(array[i]);
+      listCombinations(array, count, i+1, interim)
+    }  
+  }
+}
+
+//We already Know that sets have same size
+function areTwoSetsEqual(a, b) { 
+
+  
+  return ([...a].every(value => b.has(value))) 
+};
+
+function areThreeSetsEqual(a, b, c) { return (areTwoSetsEqual(a,b) && areTwoSetsEqual(b,c))};
+
+function areFourSetsEqual(a, b, c, d) { 
+  return (areTwoSetsEqual(a,b) && areTwoSetsEqual(b,c) && areTwoSetsEqual(c,d))
+};
+
+function areNSetsEqual(n,arrayOfSets){
+  //console.log(arrayOfSets);
+  
+  if(n==2){
+    return areTwoSetsEqual( arrayOfSets[0], arrayOfSets[1] )
+  } else if (n==3){
+    return areThreeSetsEqual(arrayOfSets[0], arrayOfSets[1], arrayOfSets[2])
+  } else if (n==4){
+    return areFourSetsEqual(arrayOfSets[0], arrayOfSets[1], arrayOfSets[2], arrayOfSets[3])
+  } 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function checkForPreemptiveEqualityInSets(mainSetBoxIndex, mainSet, RemainingSets, setOfArraysOfEqualSets){
 
@@ -370,8 +540,7 @@ areTwoSetsEqualAndHaveTwoPossibilities = (a, b) =>
 };
 
 
-let setOfArraysOfEqualSets = [];
-let testObj = { '40': new Set([1, 3, 6, 9]),'42': new Set([3, 6]),'43': new Set([3, 9]),'46': new Set([3, 6])}
-checkForPreemptiveEqualityInSets(null, null, testObj, setOfArraysOfEqualSets);
+
+//checkForPreemptiveEqualityInSets(null, null, testObj, setOfArraysOfEqualSets);
 
 //console.log(areTwoSetsEqual(new Set([3, 6]), new Set([3, 9])));
